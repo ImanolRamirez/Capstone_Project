@@ -6,8 +6,7 @@ import app
 from alembic import context
 import os
 from dotenv import load_dotenv
-from app.database import Base
-import app.models
+from app.models import Base
 import importlib
 import pkgutil
 
