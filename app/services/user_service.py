@@ -5,19 +5,23 @@ from app.data.user_data import UserData
 
 class UserService:
     def __init__(self, db: Session):
+        self.db = db
         self.user_data = UserData(db)
 
 
     def create_user(self, username: str, email: str, password: str) -> User:
-        existing_user = self.user_data.get_user_by_email(email)
+        existing_user = self.db.query(User).filter(User.email == email).first()
         if existing_user:
-            raise ValueError("User email already exists")
+            if existing_user.deleted_at is not None:
+                raise ValueError("User account was previously deleted")
+            else:
+                raise ValueError("User email already exists")
 
         hashed = hash_password(password)
         user = User(username=username, email=email, password_hash=hashed)
-        self.user_data.db.create_user(user)
-        self.user_data.db.commit()
-        self.user_data.db.refresh(user)
+        self.user_data.create_user(user)
+        self.db.commit()
+        self.db.refresh(user)
         return user
 
     def read_user_id(self, user_id: int):
@@ -27,13 +31,17 @@ class UserService:
         return self.user_data.read_user_email(email)
 
     def update_user_email(self, user_id: int, new_email: str):
+
+        email_exists = self.db.query(User).filter(User.email == new_email).first()
+        if email_exists:
+            raise ValueError("Email already used by another user.")
+
         user = self.user_data.read_user(user_id)
 
         if user:
             user.email = new_email
-            self.user_data.update(user)
-            self.user_data.db.commit()
-            self.user_data.db.refresh(user)
+            self.db.commit()
+            self.db.refresh(user)
             return user
         else:
             raise ValueError("User not found")
@@ -43,9 +51,8 @@ class UserService:
 
         if user:
             user.password_hash = hash_password(new_password)
-            self.user_data.update(user)
-            self.user_data.db.commit()
-            self.user_data.db.refresh(user)
+            self.db.commit()
+            self.db.refresh(user)
             return user
         else:
             raise ValueError("User not found")
@@ -54,8 +61,8 @@ class UserService:
         user = self.user_data.read_user(user_id)
 
         if user:
-            self.user_data.delete(user)
-            self.user_data.db.commit()
+            self.user_data.delete_user(user)
+            self.db.commit()
             return True
         else:
             raise ValueError("User not found")

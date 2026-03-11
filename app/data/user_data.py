@@ -1,5 +1,7 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.user import User
+from datetime import datetime, timezone
 
 class UserData:
 
@@ -11,16 +13,22 @@ class UserData:
         return user
 
     def read_user(self, user_id: int):
-        return self.db.query(User).filter(User.id == user_id).first()
+        return self.db.query(User).filter(User.id == user_id,
+                                           User.deleted_at == None).first()
 
     def read_user_email(self, email: str):
-        return self.db.query(User).filter(User.email == email).first()
+        return self.db.query(User).filter(User.email == email,
+                                           User.deleted_at == None).first()
 
-    def update(self, user: User):
+    def update_user(self, user: User):
         return user
 
-    def delete(self, user: User):
-        self.db.delete(user)
+    def delete_user(self, user: User):
+        user.deleted_at = func.now()
+        return user
+
+    def restore_user(self, user: User):
+        user.deleted_at = None
         return user
 
 
