@@ -1,16 +1,16 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
+from app.services.base_service import BaseService
 from app.utils.security import hash_password, verify_password
 from app.data.user_data import UserData
 
-class UserService:
+class UserService(BaseService[User]):
     def __init__(self, db: Session):
-        self.db = db
-        self.user_data = UserData(db)
+        super().__init__(db, UserData(db), "User")
 
 
     def create_user(self, username: str, email: str, password: str) -> User:
-        existing_user = self.db.query(User).filter(User.email == email).first()
+        existing_user = self.read_user_email(email)
         if existing_user:
             if existing_user.deleted_at is not None:
                 raise ValueError("User account was previously deleted")
@@ -19,16 +19,7 @@ class UserService:
 
         hashed = hash_password(password)
         user = User(username=username, email=email, password_hash=hashed)
-        self.user_data.create_user(user)
-        self.db.commit()
-        self.db.refresh(user)
-        return user
-
-    def read_user_id(self, user_id: int):
-        return self.user_data.read_user(user_id)
-
-    def read_user_email(self, email: str):
-        return self.user_data.read_user_email(email)
+        return self.create(user)
 
     def update_user_email(self, user_id: int, new_email: str):
 
@@ -36,39 +27,13 @@ class UserService:
         if email_exists:
             raise ValueError("Email already used by another user.")
 
-        user = self.user_data.read_user(user_id)
-
-        if user:
-            user.email = new_email
-            self.db.commit()
-            self.db.refresh(user)
-            return user
-        else:
-            raise ValueError("User not found")
+        return self.update(user_id, email=new_email)
 
     def update_user_password(self, user_id: int, new_password: str):
-        user = self.user_data.read_user(user_id)
+        return self.update(user_id, password=hash_password(new_password))
 
-        if user:
-            user.password_hash = hash_password(new_password)
-            self.db.commit()
-            self.db.refresh(user)
-            return user
-        else:
-            raise ValueError("User not found")
-
-    def delete_user(self, user_id: int) -> bool:
-        user = self.user_data.read_user(user_id)
-
-        if user:
-            self.user_data.delete_user(user)
-            self.db.commit()
-            return True
-        else:
-            raise ValueError("User not found")
-
-    def verify_user(self, email: str, password: str) -> User:
-        user = self.user_data.read_user_email(email)
+    def verify_user(self, email: str, password: str):
+        user = self.data.read_user_email(email)
 
         if user and verify_password(password, user.password_hash):
             return user

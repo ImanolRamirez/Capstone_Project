@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String
-from app.database import Base
-from app.utils.time import Time
+from app.models.base_model import BaseModel
 
-class Lender(Base, Time):
+
+class Lender(BaseModel):
     __tablename__ = "lenders"
 
     id = Column(Integer, primary_key=True)

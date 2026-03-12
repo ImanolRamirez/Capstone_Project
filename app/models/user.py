@@ -1,8 +1,7 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from app.database import Base
-from app.utils.time import Time
+from sqlalchemy import Column, Integer, String
+from app.models.base_model import BaseModel
 
-class User(Base, Time):
+class User(BaseModel):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
