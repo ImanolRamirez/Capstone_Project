@@ -11,4 +11,4 @@ class AccountData(BaseData[Account]):
         return self.db.query(Account).filter(
             Account.user_id == user_id,
             Account.deleted_at == None
-        ).first()
+        ).all()
