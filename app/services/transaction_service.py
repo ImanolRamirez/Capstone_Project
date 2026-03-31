@@ -6,6 +6,7 @@ from app.models.transaction import Transaction
 from app.services.account_service import AccountService
 from app.services.base_service import BaseService
 
+from decimal import Decimal
 
 class TransactionService(BaseService[Transaction, TransactionData]):
     def __init__(self, db: Session):
@@ -13,7 +14,7 @@ class TransactionService(BaseService[Transaction, TransactionData]):
         self.account_service = AccountService(db)
 
 
-    def create_transaction(self, account_id: int, category_id: int, amount:int, merchant_id:int = None, **kwargs):
+    def create_transaction(self, account_id: int, category_id: int, amount:float, merchant_id:int = None, **kwargs):
         try:
 
             account = self.db.query(Account).filter(Account.id == account_id).with_for_update().first()
@@ -24,7 +25,7 @@ class TransactionService(BaseService[Transaction, TransactionData]):
             transaction = Transaction(account_id=account_id, category_id=category_id, merchant_id=merchant_id, amount=amount, **kwargs)
             self.create(transaction)
 
-            balance = account.balance + amount
+            balance = account.balance + Decimal(str(amount))
             self.account_service.update(account_id, balance=balance, commit=False)
 
             self.db.commit()
