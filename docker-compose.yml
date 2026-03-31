@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
   db:
@@ -23,7 +22,7 @@ services:
       - .:/app
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/Capstone
-    command: bash
+    command: tail -f /dev/null
 
 volumes:
   db_data:
