@@ -14,3 +14,4 @@ class Address(BaseModel):
     country = Column(String(100), default="United States", nullable=False)
 
     is_primary = Column(Boolean, default=False)
+

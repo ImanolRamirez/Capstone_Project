@@ -12,6 +12,10 @@ class LenderService(BaseService[Lender, LenderData]):
     def create_lender(self, name: str, **kwargs):
         name = name.strip()
 
+        existing_lender = self.data.get_by_name(name)
+        if existing_lender:
+            return existing_lender
+
         new_lender = Lender(name=name, **kwargs)
         return self.create(new_lender)
 
