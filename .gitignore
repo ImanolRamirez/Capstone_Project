@@ -18,3 +18,5 @@ instance/
 
 # Mac system files (just in case)
 .DS_Store
+
+app/test.py
