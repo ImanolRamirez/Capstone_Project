@@ -13,7 +13,7 @@ class TransactionService(BaseService[Transaction, TransactionData]):
         self.account_service = AccountService(db)
 
 
-    def create_transaction(self, account_id: int, category_id: int, amount:int, **kwargs):
+    def create_transaction(self, account_id: int, category_id: int, amount:int, merchant_id:int = None, **kwargs):
         try:
 
             account = self.db.query(Account).filter(Account.id == account_id).with_for_update().first()
@@ -21,7 +21,7 @@ class TransactionService(BaseService[Transaction, TransactionData]):
             if not account:
                 raise ValueError("Account does not exist")
 
-            transaction = Transaction(account_id=account_id, category_id=category_id, amount=amount, **kwargs)
+            transaction = Transaction(account_id=account_id, category_id=category_id, merchant_id=merchant_id, amount=amount, **kwargs)
             self.create(transaction)
 
             balance = account.balance + amount
@@ -35,3 +35,6 @@ class TransactionService(BaseService[Transaction, TransactionData]):
         except Exception as e:
             self.db.rollback()
             raise e
+
+    def get_user_spending_by_merchant(self, user_id: int, merchant_id: int):
+        return self.data.get_sum_by_user_and_merchant(user_id, merchant_id)

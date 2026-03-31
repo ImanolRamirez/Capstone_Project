@@ -16,3 +16,6 @@ class Transaction(BaseModel):
 
     account = relationship("Account", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")
+
+    merchant_id = Column(Integer, ForeignKey("merchants.id"), nullable=True, index=True)
+    merchant = relationship("Merchant", back_populates="transactions")
