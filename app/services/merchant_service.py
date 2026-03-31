@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from app.models.merchant import Merchant
-from app.data.merchant_data import MerchantData
-from app.services.base_service import BaseService
+from models.merchant import Merchant
+from data.merchant_data import MerchantData
+from services.base_service import BaseService
 
 
 class MerchantService(BaseService[Merchant, MerchantData]):

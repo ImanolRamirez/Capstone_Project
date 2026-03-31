@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from app.models.lender import Lender
-from app.data.lender_data import LenderData
-from app.services.base_service import BaseService
+from models.lender import Lender
+from data.lender_data import LenderData
+from services.base_service import BaseService
 
 
 class LenderService(BaseService[Lender, LenderData]):

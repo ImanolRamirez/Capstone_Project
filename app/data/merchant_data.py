@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.data.base_data import BaseData
-from app.models.merchant import Merchant
+from data.base_data import BaseData
+from models.merchant import Merchant
 
 class MerchantData(BaseData[Merchant]):
 

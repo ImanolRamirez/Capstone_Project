@@ -14,6 +14,7 @@ transactions = [
 def get_transactions():
     month = request.args.get("month")
     year = request.args.get("year")
+    type = request.args.get("type")
     category = request.args.get("category")
 
     query = Transaction.query.filter_by(user_id=1)
@@ -27,6 +28,9 @@ def get_transactions():
     if category:
         query = query.filter_by(category=category)
 
+    if type:
+        query = query.filter_by(type=type)
+
     transactions = query.all()
 
     results = []
@@ -34,6 +38,7 @@ def get_transactions():
         results.append({
             "id": t.id,
             "amount": t.amount,
+            "type" : t.type,
             "category": t.category,
             "date": t.date
         })
@@ -52,8 +57,17 @@ def add_transaction():
     new_transaction = {
         "id": len(transactions) + 1,
         "amount": data["amount"],
+        "type" : data["type"],
         "category": data.get("category", "Other")
     }
 
-    transactions.append(new_transaction)
-    return jsonify(new_transaction), 201
+    db.session.add(new_transaction)
+    db.session.commit()
+
+    return jsonify({
+        "id": new_transaction.id,
+        "amount": new_transaction.amount,
+        "type": new_transaction.type,
+        "category": new_transaction.category,
+        "date": new_transaction.date
+    }), 201

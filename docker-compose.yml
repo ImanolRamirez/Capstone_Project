@@ -1,4 +1,6 @@
 
+version: "3.9"
+
 services:
   db:
     image: postgres:15
@@ -12,6 +14,17 @@ services:
       - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: Capstone_web
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/Capstone
+    command: bash  # container will start and wait for commands
 
 volumes:
   db_data:

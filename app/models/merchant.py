@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from app.models.base_model import BaseModel
+from models.base_model import BaseModel
 
 class Merchant(BaseModel):
     __tablename__ = "merchants"

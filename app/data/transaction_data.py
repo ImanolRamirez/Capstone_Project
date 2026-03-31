@@ -1,9 +1,9 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.data.base_data import BaseData
-from app.models.account import Account
-from app.models.transaction import Transaction
+from data.base_data import BaseData
+from models.account import Account
+from models.transaction import Transaction
 
 
 class TransactionData(BaseData[Transaction]):

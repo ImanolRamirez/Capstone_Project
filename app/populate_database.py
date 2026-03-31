@@ -1,13 +1,13 @@
 from faker import Faker
 import random
 
-from app.services.account_service import AccountService
-from app.services.address_service import AddressService
-from app.services.category_service import CategoryService
-from app.services.lender_service import LenderService
-from app.services.merchant_service import MerchantService
-from app.services.transaction_service import TransactionService
-from app.services.user_service import UserService
+from services.account_service import AccountService
+from services.address_service import AddressService
+from services.category_service import CategoryService
+from services.lender_service import LenderService
+from services.merchant_service import MerchantService
+from services.transaction_service import TransactionService
+from services.user_service import UserService
 from database import SessionLocal
 
 fake = Faker()

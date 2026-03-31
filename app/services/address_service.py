@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 
-from app.data.address_data import AddressData
-from app.models.address import Address
-from app.models.user_address import UserAddress
-from app.services.base_service import BaseService
+from data.address_data import AddressData
+from models.address import Address
+from models.user_address import UserAddress
+from services.base_service import BaseService
 
 
 class AddressService(BaseService[Address, AddressData]):

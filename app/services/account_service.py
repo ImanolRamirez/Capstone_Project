@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from app.data.account_data import AccountData
-from app.models.account import Account
-from app.services.base_service import BaseService
+from data.account_data import AccountData
+from models.account import Account
+from services.base_service import BaseService
 
 
 class AccountService(BaseService[Account, AccountData]):

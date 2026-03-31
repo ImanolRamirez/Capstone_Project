@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.data.base_data import BaseData
-from app.models.category import Category
+from data.base_data import BaseData
+from models.category import Category
 
 
 class CategoryData(BaseData[Category]):
