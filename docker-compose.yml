@@ -1,6 +1,3 @@
-
-version: "3.9"
-
 services:
   db:
     image: postgres:15
@@ -24,7 +21,7 @@ services:
       - .:/app
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/Capstone
-    command: bash  # container will start and wait for commands
+    command: tail -f /dev/null
 
 volumes:
   db_data:
