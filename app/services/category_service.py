@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from data.category_data import CategoryData
-from models.category import Category
-from services.base_service import BaseService
+from app.data.category_data import CategoryData
+from app.models.category import Category
+from app.services.base_service import BaseService
 
 
 class CategoryService(BaseService[Category, CategoryData]):

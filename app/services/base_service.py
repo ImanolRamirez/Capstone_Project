@@ -1,7 +1,7 @@
 from typing import TypeVar, Generic
 from sqlalchemy.orm import Session
-from data.base_data import BaseData
-from models.base_model import BaseModel
+from app.data.base_data import BaseData
+from app.models.base_model import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 D = TypeVar("D", bound=BaseData)

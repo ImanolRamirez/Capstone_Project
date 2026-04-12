@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from data.base_data import BaseData
-from models.user import User
+from app.data.base_data import BaseData
+from app.models.user import User
 
 class UserData(BaseData[User]):
 

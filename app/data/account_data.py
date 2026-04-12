@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from data.base_data import BaseData
-from models.account import Account
+from app.data.base_data import BaseData
+from app.models.account import Account
 
 class AccountData(BaseData[Account]):
 

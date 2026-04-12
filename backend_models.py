@@ -1,4 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
+"""from flask_sqlalchemy import SQLAlchemy
 from extensions import db
 
 class User(db.Model):
@@ -29,4 +29,4 @@ class Debt(db.Model):
     name = db.Column(db.String(100))
     amount = db.Column(db.Float)
     interest_rate = db.Column(db.Float)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))"""

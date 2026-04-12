@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
-from data.transaction_data import TransactionData
-from models.account import Account
-from models.transaction import Transaction
-from services.account_service import AccountService
-from services.base_service import BaseService
+from app.data.transaction_data import TransactionData
+from app.models.account import Account
+from app.models.transaction import Transaction
+from app.services.account_service import AccountService
+from app.services.base_service import BaseService
 
 from decimal import Decimal
 

@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from models.user import User
-from services.base_service import BaseService
-from utils.security import hash_password, verify_password
-from data.user_data import UserData
+from app.models.user import User
+from app.services.base_service import BaseService
+from app.utils.security import hash_password, verify_password
+from app.data.user_data import UserData
 
 class UserService(BaseService[User, UserData]):
     def __init__(self, db: Session):

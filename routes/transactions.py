@@ -1,73 +1,109 @@
 from flask import Blueprint, jsonify, request
-from models import db, Transaction
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy import extract
+from app.models.transaction import Transaction
+from app.models.account import Account
+from app.database import SessionLocal
 
 transaction_bp = Blueprint("transactions", __name__)
 
-transactions = [
-    {"id": 1, "amount": 2000, "type": "income", "category": "Salary"},
-    {"id": 2, "amount": 50, "type": "expense", "category": "Food"},
-    {"id": 3, "amount": 800, "type": "expense", "category": "Rent"},
-]
 
-# GET all transactions
 @transaction_bp.route("/transactions", methods=["GET"])
+@jwt_required()
 def get_transactions():
-    month = request.args.get("month")
-    year = request.args.get("year")
-    type = request.args.get("type")
-    category = request.args.get("category")
+    user_id = get_jwt_identity()
+    db = SessionLocal()
+    try:
+        month = request.args.get("month")
+        year = request.args.get("year")
+        category_id = request.args.get("category")
 
-    query = Transaction.query.filter_by(user_id=1)
-
-    if month and year:
-        query = query.filter(
-            db.extract('month', Transaction.date) == int(month),
-            db.extract('year', Transaction.date) == int(year)
+        query = db.query(Transaction).join(Transaction.account).filter(
+            Account.user_id == int(user_id)
         )
 
-    if category:
-        query = query.filter_by(category=category)
+        if month and year:
+            query = query.filter(
+                extract("month", Transaction.transaction_date) == int(month),
+                extract("year", Transaction.transaction_date) == int(year)
+            )
 
-    if type:
-        query = query.filter_by(type=type)
+        if category_id:
+            query = query.filter(Transaction.category_id == int(category_id))
 
-    transactions = query.all()
+        transactions = query.all()
 
-    results = []
-    for t in transactions:
-        results.append({
-            "id": t.id,
-            "amount": t.amount,
-            "type" : t.type,
-            "category": t.category,
-            "date": t.date
-        })
+        results = [
+            {
+                "id": t.id,
+                "account_id": t.account_id,
+                "category_id": t.category_id,
+                "merchant_id": t.merchant_id,
+                "amount": str(t.amount),
+                "description": t.description,
+                "transaction_date": t.transaction_date.isoformat() if t.transaction_date else None
+            }
+            for t in transactions
+        ]
+        return jsonify(results), 200
+    finally:
+        db.close()
 
-    return jsonify(results)
 
-
-# POST new transaction
 @transaction_bp.route("/transactions", methods=["POST"])
+@jwt_required()
 def add_transaction():
-    data = request.get_json()
+    db = SessionLocal()
+    try:
+        data = request.get_json()
 
-    if not data.get("amount") or not data.get("type"):
-        return jsonify({"error": "Amount and type required"}), 400
+        if not data.get("account_id") or not data.get("amount"):
+            return jsonify({"error": "Account ID and amount are required"}), 400
 
-    new_transaction = {
-        "id": len(transactions) + 1,
-        "amount": data["amount"],
-        "type" : data["type"],
-        "category": data.get("category", "Other")
-    }
+        new_transaction = Transaction(
+            account_id=data["account_id"],
+            category_id=data.get("category_id"),
+            merchant_id=data.get("merchant_id"),
+            amount=data["amount"],
+            description=data.get("description"),
+        )
 
-    db.session.add(new_transaction)
-    db.session.commit()
+        db.add(new_transaction)
+        db.commit()
+        db.refresh(new_transaction)
 
-    return jsonify({
-        "id": new_transaction.id,
-        "amount": new_transaction.amount,
-        "type": new_transaction.type,
-        "category": new_transaction.category,
-        "date": new_transaction.date
-    }), 201
+        return jsonify({
+            "id": new_transaction.id,
+            "account_id": new_transaction.account_id,
+            "category_id": new_transaction.category_id,
+            "merchant_id": new_transaction.merchant_id,
+            "amount": str(new_transaction.amount),
+            "description": new_transaction.description,
+            "transaction_date": new_transaction.transaction_date.isoformat() if new_transaction.transaction_date else None
+        }), 201
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
+@transaction_bp.route("/transactions/<int:transaction_id>", methods=["DELETE"])
+@jwt_required()
+def delete_transaction(transaction_id):
+    db = SessionLocal()
+    try:
+        transaction = db.query(Transaction).filter(Transaction.id == transaction_id).first()
+
+        if not transaction:
+            return jsonify({"error": "Transaction not found"}), 404
+
+        db.delete(transaction)
+        db.commit()
+
+        return jsonify({"message": "Transaction deleted"}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from data.base_data import BaseData
-from models.address import Address
-from models.user_address import UserAddress
+from app.data.base_data import BaseData
+from app.models.address import Address
+from app.models.user_address import UserAddress
 
 
 class AddressData(BaseData[Address]):

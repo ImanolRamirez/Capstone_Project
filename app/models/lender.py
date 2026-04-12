@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 
 class Lender(BaseModel):

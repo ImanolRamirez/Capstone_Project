@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, DateTime, func
 from sqlalchemy.orm import relationship
-from models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 
 class Transaction(BaseModel):
