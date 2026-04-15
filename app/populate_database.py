@@ -51,6 +51,8 @@ def populate_database(num_users: int, transaction_count: int):
         for _ in range(num_users):
             user = user_service.create_user(
                 username=fake.user_name(),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
                 email=fake.email(),
                 password="password123"
             )
@@ -64,7 +66,7 @@ def populate_database(num_users: int, transaction_count: int):
 
             for i in range(random.randint(1, 3)):
                 account_name = (f"{user.username}'s {random.choice(["Simple", "Preferred"])} "
-                                f"{random.choice(["Checking", "Savings", "Checking", "Loan"])}")
+                                f"{random.choice(['Checking', 'Savings', 'Credit Card', 'Loan'])}")
                 lender = random.choice(lenders)
 
                 account = account_service.create_account(
@@ -87,11 +89,12 @@ def populate_database(num_users: int, transaction_count: int):
                     transaction_service.create_transaction(
                         account_id=account.id,
                         category_id=category.id,
+                        merchant_id=random.choice(merchants).id,
                         amount=round(amount, 2),
                         description=fake.sentence(nb_words=random.randint(1, 10))
                     )
 
-                print("Database populated.")
+        print("Database populated.")
 
     except Exception as e:
         print(e)

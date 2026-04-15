@@ -9,7 +9,7 @@ class UserService(BaseService[User, UserData]):
         super().__init__(db, UserData(db), "User")
 
 
-    def create_user(self, username: str, email: str, password: str) -> User:
+    def create_user(self, username: str, first_name: str, last_name: str, email: str, password: str) -> User:
         existing_user = self.data.read_user_email(email)
         if existing_user:
             if existing_user.deleted_at is not None:
@@ -18,7 +18,7 @@ class UserService(BaseService[User, UserData]):
                 raise ValueError("User email already exists")
 
         hashed = hash_password(password)
-        user = User(username=username, email=email, password_hash=hashed)
+        user = User(username=username, first_name=first_name, last_name=last_name, email=email, password_hash=hashed)
         return self.create(user)
 
     def update_user_email(self, user_id: int, new_email: str):
