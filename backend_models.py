@@ -1,6 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+"""from flask_sqlalchemy import SQLAlchemy
+from extensions import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,3 +23,10 @@ class Transaction(db.Model):
     month = db.Column(db.Integer, nullable=False)
     year = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class Debt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    amount = db.Column(db.Float)
+    interest_rate = db.Column(db.Float)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))"""
