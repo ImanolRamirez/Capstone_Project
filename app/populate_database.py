@@ -104,4 +104,4 @@ def populate_database(num_users: int, transaction_count: int):
 
 
 
-populate_database(num_users=50, transaction_count=13)
+# populate_database(num_users=50, transaction_count=13)

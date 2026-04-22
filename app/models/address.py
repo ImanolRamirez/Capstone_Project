@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
-from app.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 class Address(BaseModel):
     __tablename__ = "addresses"
