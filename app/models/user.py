@@ -14,3 +14,4 @@ class User(BaseModel):
     password_hash = Column(String(255), nullable=False)
 
     accounts = relationship("Account", back_populates="user")
+    budgets = relationship("Budget", back_populates="user")
