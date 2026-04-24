@@ -21,7 +21,7 @@ class BaseService(Generic[T, D]):
             raise ValueError(f"{self.model_name} not found")
         return model
 
-    def create(self, model: T, commit: bool = True):
+    def create(self, model: T, commit: bool = False):
         self.db.add(model)
         if commit:
             self.db.commit()
@@ -31,13 +31,16 @@ class BaseService(Generic[T, D]):
         return model
 
 
-    def remove(self, id: int):
+    def remove(self, id: int, commit: bool = False):
         model = self.get_by_id(id)
         self.data.delete(model)
-        self.db.commit()
+        if commit:
+            self.db.commit()
+        else:
+            self.db.flush()
         return True
 
-    def update(self, id: int, commit: bool = True, **kwargs):
+    def update(self, id: int, commit: bool = False, **kwargs):
         model = self.get_by_id(id)
 
         for key, value in kwargs.items():

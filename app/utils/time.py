@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
 class Time:
-    create_at: Mapped[DateTime] = mapped_column(
+    created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
         default=func.now()
