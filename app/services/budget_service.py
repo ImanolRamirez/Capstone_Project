@@ -8,15 +8,15 @@ class BudgetService(BaseService[Budget, BudgetData]):
     def __init__(self, db: Session):
         super().__init__(db, BudgetData(db), "Budget")
 
-    def create_budget(self, user_id: int, category: str, amount: float, month: int, year: int, **kwargs):
-        existing_budget = self.data.get_budget(user_id, category, month, year)
+    def create_budget(self, user_id: int, category_id: int, amount: float, month: int, year: int, **kwargs):
+        existing_budget = self.data.get_budget(user_id, category_id, month, year)
 
         if existing_budget:
-            raise ValueError(f"A budget for {category} already exists in {month}/{year}.")
+            raise ValueError(f"A budget for this category already exists in {month}/{year}.")
 
         new_budget = Budget(
             user_id=user_id,
-            category=category,
+            category_id=category_id,
             amount=amount,
             month=month,
             year=year,

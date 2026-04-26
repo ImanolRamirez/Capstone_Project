@@ -13,10 +13,10 @@ class BudgetData(BaseData[Budget]):
             Budget.deleted_at == None
         ).all()
 
-    def get_budget(self, user_id: int, category: str, month: int, year: int):
+    def get_budget(self, user_id: int, category_id: int, month: int, year: int):
         return self.db.query(Budget).filter(
             Budget.user_id == user_id,
-            Budget.category == category,
+            Budget.category_id == category_id,
             Budget.month == month,
             Budget.year == year,
             Budget.deleted_at == None

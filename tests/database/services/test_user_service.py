@@ -8,7 +8,7 @@ def test_create_user_hash_password(db_session):
         username="serviceuser",
         first_name="Service",
         last_name="User",
-        email="service@test.com",
+        email="services@test.com",
         password="testpassword"
     )
 

@@ -8,9 +8,11 @@ class Budget(BaseModel):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    category = Column(String(100), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False, default=0.00)
     month = Column(Integer, nullable=False)
     year = Column(Integer, nullable=False)
 
     user = relationship("User", back_populates="budgets")
+
+    category = relationship("Category")
