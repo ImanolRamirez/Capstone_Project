@@ -30,11 +30,11 @@ class AccountService(BaseService[Account, AccountData]):
             **kwargs
         )
 
-        return self.create(new_account)
+        return self.create(new_account, commit=True)
 
 
     def get_user_accounts(self, user_id: int):
         return self.data.get_accounts_by_user(user_id)
 
     def update_balance(self, account_id: int, new_balance: float):
-        return self.update(account_id, balance=new_balance)
+        return self.update(account_id, balance=new_balance, commit=True)

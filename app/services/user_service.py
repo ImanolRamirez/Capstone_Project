@@ -19,7 +19,7 @@ class UserService(BaseService[User, UserData]):
 
         hashed = hash_password(password)
         user = User(username=username, first_name=first_name, last_name=last_name, email=email, password_hash=hashed)
-        return self.create(user)
+        return self.create(user, commit=True)
 
     def update_user_email(self, user_id: int, new_email: str):
 
@@ -27,10 +27,10 @@ class UserService(BaseService[User, UserData]):
         if email_exists:
             raise ValueError("Email already used by another user.")
 
-        return self.update(user_id, email=new_email)
+        return self.update(user_id, email=new_email, commit=True)
 
     def update_user_password(self, user_id: int, new_password: str):
-        return self.update(user_id, password=hash_password(new_password))
+        return self.update(user_id, password=hash_password(new_password), commit=True)
 
     def verify_user(self, email: str, password: str):
         user = self.data.read_user_email(email)

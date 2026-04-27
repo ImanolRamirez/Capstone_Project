@@ -15,4 +15,4 @@ class CategoryService(BaseService[Category, CategoryData]):
             return existing_category
 
         category = Category(name=name, type=type)
-        return self.create(category)
+        return self.create(category, commit=True)

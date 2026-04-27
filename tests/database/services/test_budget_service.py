@@ -1,5 +1,4 @@
 import pytest
-from decimal import Decimal
 from app.models.user import User
 from app.models.category import Category
 from app.services.budget_service import BudgetService

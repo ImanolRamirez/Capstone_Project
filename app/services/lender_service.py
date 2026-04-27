@@ -17,7 +17,7 @@ class LenderService(BaseService[Lender, LenderData]):
             return existing_lender
 
         new_lender = Lender(name=name, **kwargs)
-        return self.create(new_lender)
+        return self.create(new_lender, commit=True)
 
     def rename_lender(self, lender_id: int, new_name: str):
-        return self.update(lender_id, name=new_name.strip().lower())
+        return self.update(lender_id, name=new_name.strip().lower(), commit=True)

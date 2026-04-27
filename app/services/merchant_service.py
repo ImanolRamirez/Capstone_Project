@@ -17,7 +17,7 @@ class MerchantService(BaseService[Merchant, MerchantData]):
             raise ValueError(f"Merchant with name {name} already exists")
 
         new_merchant = Merchant(name=name, **kwargs)
-        return self.create(new_merchant)
+        return self.create(new_merchant, commit=True)
 
     def rename_merchant(self, merchant_id: int, new_name: str):
-        return self.update(merchant_id, name=new_name.strip().lower())
+        return self.update(merchant_id, name=new_name.strip().lower(), commit=True)

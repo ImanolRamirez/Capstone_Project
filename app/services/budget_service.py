@@ -23,7 +23,7 @@ class BudgetService(BaseService[Budget, BudgetData]):
             **kwargs
         )
 
-        return self.create(new_budget)
+        return self.create(new_budget, commit=True)
 
     def get_user_budgets(self, user_id: int):
         return self.data.get_budgets_by_user(user_id)
