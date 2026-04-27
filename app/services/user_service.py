@@ -10,6 +10,11 @@ class UserService(BaseService[User, UserData]):
 
 
     def create_user(self, username: str, first_name: str, last_name: str, email: str, password: str) -> User:
+
+        password_pattern = r"^(?=.*[0-9])(?=.*[!@#$%^&*_=+-]).{8,}$"
+        if not re.match(password_pattern, password):
+            raise ValueError("Password must be at least 8 characters and contain a number and a symbol.")
+
         existing_user = self.data.read_user_email(email)
         if existing_user:
             if existing_user.deleted_at is not None:
