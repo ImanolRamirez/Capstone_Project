@@ -31,3 +31,14 @@ export const updateLanguage = async (language) => {
     body: JSON.stringify({ language })
   });
 };
+
+export const getNotifications = async () => {
+  return apiRequest("/api/user/notifications");
+};
+
+export const updateNotifications = async (prefs) => {
+  return apiRequest("/api/user/notifications", {
+    method: "PUT",
+    body: JSON.stringify(prefs)
+  });
+};

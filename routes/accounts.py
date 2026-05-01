@@ -34,7 +34,11 @@ def get_accounts():
                 "name": a.account_name,
                 "type": a.account_type,
                 "balance": float(balance),
-                "apy": float(a.interest_rate)
+                "apy": float(a.interest_rate),
+                "routing_number": a.routing_number,
+                "account_number": a.account_number,
+                "savings_goal_label": a.savings_goal_label,
+                "savings_goal_amount": float(a.savings_goal_amount) if a.savings_goal_amount is not None else None
             })
         return jsonify(results), 200
     finally:
@@ -59,14 +63,20 @@ def create_account():
             account_type=data["account_type"],
             lender_id=data.get("lender_id"),
             balance=data.get("balance", 0.00),
-            interest_rate=data.get("interest_rate", 0.00)
+            interest_rate=data.get("interest_rate", 0.00),
+            savings_goal_label=data.get("savings_goal_label"),
+            savings_goal_amount=data.get("savings_goal_amount")
         )
         return jsonify({
             "id": account.id,
             "name": account.account_name,
             "type": account.account_type,
             "balance": float(account.balance),
-            "apy": float(account.interest_rate)
+            "apy": float(account.interest_rate),
+            "routing_number": account.routing_number,
+            "account_number": account.account_number,
+            "savings_goal_label": account.savings_goal_label,
+            "savings_goal_amount": float(account.savings_goal_amount) if account.savings_goal_amount is not None else None
         }), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

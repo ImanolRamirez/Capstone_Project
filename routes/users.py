@@ -152,3 +152,46 @@ def update_language():
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
+
+
+NOTIF_FIELDS = [
+    "notif_email_transactions", "notif_email_security", "notif_email_promotions",
+    "notif_push_transactions", "notif_push_security", "notif_push_promotions",
+    "notif_sms_transactions", "notif_sms_security"
+]
+
+
+@users_bp.route("/user/notifications", methods=["GET"])
+@jwt_required()
+def get_notifications():
+    user_id = get_jwt_identity()
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        return jsonify({field: getattr(user, field) for field in NOTIF_FIELDS}), 200
+    finally:
+        db.close()
+
+
+@users_bp.route("/user/notifications", methods=["PUT"])
+@jwt_required()
+def update_notifications():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        for field in NOTIF_FIELDS:
+            if field in data:
+                setattr(user, field, bool(data[field]))
+        db.commit()
+        return jsonify({"message": "Notification preferences saved"}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()

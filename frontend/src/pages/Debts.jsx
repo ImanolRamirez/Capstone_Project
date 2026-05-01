@@ -5,13 +5,25 @@ import {
   CardContent,
   Chip,
   Divider,
+  Collapse,
   LinearProgress,
   CircularProgress,
   Alert,
-  Button
+  Button,
+  IconButton,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody
 } from "@mui/material";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -62,14 +74,47 @@ function maskAccountNumber(id) {
   return `•••• •••• •••• ${base.slice(-4)}`;
 }
 
-function Debts() {
+// Monthly interest-only payment estimate
+function calcPayoffMonths(balance, apr, monthlyPayment) {
+  if (!monthlyPayment || monthlyPayment <= 0) return null;
+  const monthlyRate = apr / 100 / 12;
+  if (monthlyRate === 0) return Math.ceil(balance / monthlyPayment);
+  if (monthlyPayment <= balance * monthlyRate) return null; // never pays off
+  return Math.ceil(
+    -Math.log(1 - (balance * monthlyRate) / monthlyPayment) / Math.log(1 + monthlyRate)
+  );
+}
 
+function calcTotalInterest(balance, apr, monthlyPayment) {
+  const months = calcPayoffMonths(balance, apr, monthlyPayment);
+  if (months === null) return null;
+  return Math.max(0, monthlyPayment * months - balance);
+}
+
+function addMonths(months) {
+  if (months === null) return "Unknown";
+  const d = new Date();
+  d.setMonth(d.getMonth() + months);
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+function Debts() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { debts, loading, error } = useDebts();
+  const [insightsOpen, setInsightsOpen] = useState(true);
 
   const totalDebt = debts.reduce((sum, d) => sum + (d.balance || 0), 0);
   const chartData = debts.map(d => ({ name: d.type, value: parseFloat(d.balance.toFixed(2)) }));
+
+  // Sort by APR descending for priority
+  const sortedByApr = [...debts].sort((a, b) => (b.apr || 0) - (a.apr || 0));
+  const priorityDebt = sortedByApr[0] || null;
+
+  const totalInterestAll = debts.reduce((sum, d) => {
+    const ti = calcTotalInterest(d.balance, d.apr, d.monthlyPayment);
+    return ti !== null ? sum + ti : sum;
+  }, 0);
 
   if (loading) {
     return (
@@ -98,7 +143,6 @@ function Debts() {
   }
 
   return (
-
     <Box>
 
       <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
@@ -108,15 +152,13 @@ function Debts() {
         {debts.length} active {debts.length === 1 ? "liability" : "liabilities"}
       </Typography>
 
-
       {/* TOTAL DEBT BANNER */}
-
       <Card
         sx={{
           borderRadius: 4,
           background: "linear-gradient(135deg, #7f0000 0%, #C62828 100%)",
           color: "white",
-          mb: 4
+          mb: 3
         }}
       >
         <CardContent sx={{ p: 3 }}>
@@ -129,12 +171,149 @@ function Debts() {
         </CardContent>
       </Card>
 
-      {/* DEBT CARDS + CHART */}
+      {/* DEBT INSIGHTS PANEL */}
+      <Card sx={{ borderRadius: 4, mb: 4, border: "1px solid #ffcdd2" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 3,
+            py: 2,
+            cursor: "pointer",
+            backgroundColor: "#fff8f8",
+            borderRadius: insightsOpen ? "16px 16px 0 0" : 4
+          }}
+          onClick={() => setInsightsOpen(!insightsOpen)}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <LightbulbOutlinedIcon sx={{ color: "#C62828" }} />
+            <Typography variant="h6" fontWeight="bold" color="#C62828">
+              Debt Insights
+            </Typography>
+          </Box>
+          <IconButton size="small">
+            {insightsOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+        </Box>
 
+        <Collapse in={insightsOpen}>
+          <CardContent sx={{ pt: 0 }}>
+            <Divider sx={{ mb: 2 }} />
+
+            {/* Priority debt alert */}
+            {priorityDebt && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  backgroundColor: "#fff3e0",
+                  borderRadius: 2,
+                  p: 2,
+                  mb: 3
+                }}
+              >
+                <WarningAmberIcon sx={{ color: "#E65100" }} />
+                <Box>
+                  <Typography variant="body2" fontWeight="bold" color="#E65100">
+                    Highest APR — Priority Debt
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>{priorityDebt.name || priorityDebt.type}</strong> at{" "}
+                    <strong>{priorityDebt.apr}% APR</strong> — pay this down first to minimize interest.
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            {/* Summary stats */}
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 3 }}>
+              <Box sx={{ backgroundColor: "#fafafa", borderRadius: 2, p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Total Debt</Typography>
+                <Typography variant="h6" fontWeight="bold">
+                  ${totalDebt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Typography>
+              </Box>
+              <Box sx={{ backgroundColor: "#fafafa", borderRadius: 2, p: 2 }}>
+                <Typography variant="caption" color="text.secondary">Est. Total Interest</Typography>
+                <Typography variant="h6" fontWeight="bold" color="#C62828">
+                  ${totalInterestAll.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Per-debt breakdown table */}
+            <Typography variant="body2" fontWeight="bold" sx={{ mb: 1 }}>
+              Payoff Timeline
+            </Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                  <TableCell sx={{ fontWeight: "bold" }}>Account</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>APR</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Monthly Pmt</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Est. Payoff</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Total Interest</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedByApr.map((d) => {
+                  const months = calcPayoffMonths(d.balance, d.apr, d.monthlyPayment);
+                  const interest = calcTotalInterest(d.balance, d.apr, d.monthlyPayment);
+                  return (
+                    <TableRow key={d.id} sx={{ "&:last-child td": { border: 0 } }}>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="bold">{d.name || d.type}</Typography>
+                        <Typography variant="caption" color="text.secondary">{d.type}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={`${d.apr}%`}
+                          size="small"
+                          sx={{
+                            backgroundColor: d.id === priorityDebt?.id ? "#ffebee" : "#f5f5f5",
+                            color: d.id === priorityDebt?.id ? "#C62828" : "#555",
+                            fontWeight: "bold"
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {d.monthlyPayment != null
+                          ? `$${d.monthlyPayment.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                          : "—"
+                        }
+                      </TableCell>
+                      <TableCell>
+                        {months !== null
+                          ? <Box>
+                              <Typography variant="body2">{addMonths(months)}</Typography>
+                              <Typography variant="caption" color="text.secondary">{months} months</Typography>
+                            </Box>
+                          : <Typography variant="body2" color="text.secondary">—</Typography>
+                        }
+                      </TableCell>
+                      <TableCell>
+                        {interest !== null
+                          ? <Typography variant="body2" color="#C62828" fontWeight="bold">
+                              ${interest.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </Typography>
+                          : <Typography variant="body2" color="text.secondary">—</Typography>
+                        }
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Collapse>
+      </Card>
+
+      {/* DEBT CARDS + CHART */}
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, mb: 4 }}>
 
         {/* DEBT CARDS */}
-
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
 
           {debts.map((d) => {
@@ -202,7 +381,6 @@ function Debts() {
                     </Box>
                   )}
 
-                  {/* Payment due this month */}
                   {d.nextPaymentDue != null && (
                     <Box
                       sx={{
@@ -274,7 +452,6 @@ function Debts() {
         </Box>
 
         {/* PIE CHART */}
-
         <Card sx={{ borderRadius: 4, p: 1 }}>
           <CardContent>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
@@ -303,9 +480,7 @@ function Debts() {
       </Box>
 
     </Box>
-
   );
-
 }
 
 export default Debts;

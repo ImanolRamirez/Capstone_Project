@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 
 from app.models.base_model import BaseModel
@@ -15,6 +15,15 @@ class User(BaseModel):
     security_question = Column(String(255), nullable=True)
     security_answer = Column(String(255), nullable=True)
     language = Column(String(50), nullable=False, default="English")
+
+    notif_email_transactions = Column(Boolean, nullable=False, default=True)
+    notif_email_security = Column(Boolean, nullable=False, default=True)
+    notif_email_promotions = Column(Boolean, nullable=False, default=False)
+    notif_push_transactions = Column(Boolean, nullable=False, default=True)
+    notif_push_security = Column(Boolean, nullable=False, default=True)
+    notif_push_promotions = Column(Boolean, nullable=False, default=False)
+    notif_sms_transactions = Column(Boolean, nullable=False, default=False)
+    notif_sms_security = Column(Boolean, nullable=False, default=True)
 
     accounts = relationship("Account", back_populates="user", cascade="all, delete-orphan")
     budgets = relationship("Budget", back_populates="user", cascade="all, delete-orphan")
