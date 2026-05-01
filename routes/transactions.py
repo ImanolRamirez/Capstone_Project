@@ -5,6 +5,7 @@ from app.models.transaction import Transaction
 from app.models.account import Account
 from app.models.category import Category
 from app.database import SessionLocal
+from datetime import datetime
 
 transaction_bp = Blueprint("transactions", __name__)
 
@@ -72,12 +73,20 @@ def add_transaction():
         if not account:
             return jsonify({"error": "Account not found"}), 404
 
+        tx_date = None
+        if data.get("transaction_date"):
+            try:
+                tx_date = datetime.strptime(data["transaction_date"], "%Y-%m-%d")
+            except ValueError:
+                tx_date = None
+
         new_transaction = Transaction(
             account_id=data["account_id"],
             category_id=data.get("category_id"),
             merchant_id=data.get("merchant_id"),
             amount=data["amount"],
             description=data.get("description"),
+            transaction_date=tx_date
         )
 
         db.add(new_transaction)
