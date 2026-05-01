@@ -1,0 +1,39 @@
+databases:
+  - name: capstone-db
+    databaseName: Capstone
+    user: postgres
+    plan: free
+
+services:
+  # ── Flask Backend ────────────────────────────────────────────────────────────
+  - type: web
+    name: capstone-backend
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "alembic upgrade head && gunicorn app:flask_app --workers 2 --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: capstone-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  # ── React Frontend ───────────────────────────────────────────────────────────
+  - type: web
+    name: capstone-frontend
+    runtime: static
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: "./frontend/dist"
+    routes:
+      - type: rewrite
+        source: "/*"
+        destination: "/index.html"
+    envVars:
+      - key: VITE_API_URL
+        sync: false
