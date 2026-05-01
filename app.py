@@ -1,7 +1,11 @@
+import os
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from datetime import timedelta
 from routes.transactions import transaction_bp
+from routes.users import users_bp
+from routes.transfers import transfers_bp
 from routes.dashboard import dashboard_bp
 from routes.auth import auth
 from routes.budgets import budget_bp
@@ -21,26 +25,32 @@ import app.models.address
 import app.models.user_address
 import app.models.lender
 import app.models.budget
+from dotenv import load_dotenv
+
+load_dotenv()
 
 flask_app = Flask(__name__)
 
-flask_app.config["SECRET_KEY"] = "secret_key"
-flask_app.config["JWT_SECRET_KEY"] = "secret_key"
+flask_app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+flask_app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
+flask_app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
 
 JWTManager(flask_app)
 CORS(flask_app)
 
-# Register blueprints
-flask_app.register_blueprint(auth)
-flask_app.register_blueprint(transaction_bp)
-flask_app.register_blueprint(dashboard_bp)
-flask_app.register_blueprint(budget_bp)
-flask_app.register_blueprint(debts_bp)
-flask_app.register_blueprint(accounts_bp)
-flask_app.register_blueprint(categories_bp)
-flask_app.register_blueprint(merchants_bp)
-flask_app.register_blueprint(lenders_bp)
-flask_app.register_blueprint(addresses_bp)
+# Register blueprints with /api prefix
+flask_app.register_blueprint(auth, url_prefix="/api")
+flask_app.register_blueprint(transaction_bp, url_prefix="/api")
+flask_app.register_blueprint(dashboard_bp, url_prefix="/api")
+flask_app.register_blueprint(budget_bp, url_prefix="/api")
+flask_app.register_blueprint(debts_bp, url_prefix="/api")
+flask_app.register_blueprint(accounts_bp, url_prefix="/api")
+flask_app.register_blueprint(categories_bp, url_prefix="/api")
+flask_app.register_blueprint(merchants_bp, url_prefix="/api")
+flask_app.register_blueprint(lenders_bp, url_prefix="/api")
+flask_app.register_blueprint(addresses_bp, url_prefix="/api")
+flask_app.register_blueprint(users_bp, url_prefix="/api")
+flask_app.register_blueprint(transfers_bp, url_prefix="/api")
 
 # Create tables
 Base.metadata.create_all(engine)

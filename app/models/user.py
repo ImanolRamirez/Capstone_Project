@@ -12,6 +12,9 @@ class User(BaseModel):
     last_name = Column(String(100), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
+    security_question = Column(String(255), nullable=True)
+    security_answer = Column(String(255), nullable=True)
+    language = Column(String(50), nullable=False, default="English")
 
-    accounts = relationship("Account", back_populates="user")
-    budgets = relationship("Budget", back_populates="user")
+    accounts = relationship("Account", back_populates="user", cascade="all, delete-orphan")
+    budgets = relationship("Budget", back_populates="user", cascade="all, delete-orphan")

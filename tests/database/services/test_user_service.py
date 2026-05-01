@@ -1,6 +1,8 @@
 import pytest
 from app.services.user_service import UserService
 
+TEST_PASSWORD = "Test123!"
+
 def test_create_user_hash_password(db_session):
     user_service = UserService(db_session)
 
@@ -9,14 +11,14 @@ def test_create_user_hash_password(db_session):
         first_name="Service",
         last_name="User",
         email="services@test.com",
-        password="testpassword123!"
+        password=TEST_PASSWORD
     )
 
     db_session.commit()
 
     assert user.id is not None
     assert user.username == "serviceuser"
-    assert user.password_hash != "testpassword123!"
+    assert user.password_hash != TEST_PASSWORD
 
 
 def test_create_user_existing_email(db_session):
@@ -27,7 +29,7 @@ def test_create_user_existing_email(db_session):
         first_name="First",
         last_name="User",
         email="existing@test.com",
-        password="testpassword123!"
+        password=TEST_PASSWORD
     )
 
     with pytest.raises(ValueError, match="User email already exists"):
@@ -36,10 +38,11 @@ def test_create_user_existing_email(db_session):
             first_name="Second",
             last_name="User",
             email="existing@test.com",
-            password="testpassword123!"
+            password=TEST_PASSWORD
         )
 
-def test_verify_user(db_session):
+
+def test_authenticate_user(db_session):
     user_service = UserService(db_session)
 
     user_service.create_user(
@@ -47,22 +50,22 @@ def test_verify_user(db_session):
         first_name="Verify",
         last_name="User",
         email="verify@test.com",
-        password="testpassword123!"
+        password=TEST_PASSWORD
     )
 
     db_session.commit()
 
-    verified_user = user_service.verify_user("verify@test.com", "testpassword123!")
+    verified_user = user_service.authenticate_user("verify@test.com", TEST_PASSWORD)
 
     assert verified_user is not None
     assert verified_user.username == "verifyuser"
     assert verified_user.email == "verify@test.com"
 
     with pytest.raises(ValueError, match="Invalid email or password"):
-        user_service.verify_user("verify@test.com", "wrongpassword123!")
+        user_service.authenticate_user("verify@test.com", "wrongpassword123!")
 
     with pytest.raises(ValueError, match="Invalid email or password"):
-        user_service.verify_user("wrong@test.com", "testpassword123!")
+        user_service.authenticate_user("wrong@test.com", TEST_PASSWORD)
 
 
 @pytest.mark.parametrize(
@@ -75,7 +78,6 @@ def test_verify_user(db_session):
         ("longpass", "Long", "Pass", "long@example.com", "v3ryL0ngP@ssw0rd!+", True),
     ]
 )
-
 def test_user_passwords(db_session, username, first_name, last_name, email, password, expected):
 
     user_service = UserService(db_session)

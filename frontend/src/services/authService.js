@@ -31,3 +31,19 @@ export const logoutUser = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 };
+
+// FORGOT PASSWORD — get security question by email
+export const getSecurityQuestion = async (email) => {
+  return apiRequest("/api/forgot-password/question", {
+    method: "POST",
+    body: JSON.stringify({ email })
+  });
+};
+
+// FORGOT PASSWORD — verify answer and reset password
+export const resetPasswordViaSecurity = async (email, security_answer, new_password) => {
+  return apiRequest("/api/forgot-password/reset", {
+    method: "POST",
+    body: JSON.stringify({ email, security_answer, new_password })
+  });
+};

@@ -5,8 +5,8 @@ function Navbar() {
 
  const navigate = useNavigate();
 
- const currentUser = JSON.parse(localStorage.getItem("user"));
- const name = currentUser?.firstName || currentUser?.email || "User";
+ const stored = JSON.parse(localStorage.getItem("user") || "{}");
+ const name = stored?.firstName || stored?.email || "User";
 
  const logout = () => {
   localStorage.removeItem("token");

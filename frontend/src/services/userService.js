@@ -1,27 +1,33 @@
-export const getUser = async () => {
+import { apiRequest } from "./apiClient";
 
- let user = JSON.parse(localStorage.getItem("user"))
+export const getMe = async () => {
+  return apiRequest("/api/user/me");
+};
 
- if (!user) {
+export const updateProfile = async (data) => {
+  return apiRequest("/api/user/update", {
+    method: "PUT",
+    body: JSON.stringify(data)
+  });
+};
 
-  user = {
-   id:1,
-   firstName:"Imanol",
-   lastName:"Ramirez",
-   email:"imanol@email.com",
-   country:"United States"
-  }
+export const changePassword = async (currentPassword, newPassword) => {
+  return apiRequest("/api/user/password", {
+    method: "PUT",
+    body: JSON.stringify({ currentPassword, newPassword })
+  });
+};
 
-  localStorage.setItem("user",JSON.stringify(user))
- }
+export const updateSecurity = async (security_question, security_answer) => {
+  return apiRequest("/api/user/security", {
+    method: "PUT",
+    body: JSON.stringify({ security_question, security_answer })
+  });
+};
 
- return user
-}
-
-
-export const updateUser = async (userData) => {
-
- localStorage.setItem("user",JSON.stringify(userData))
-
- return userData
-}
+export const updateLanguage = async (language) => {
+  return apiRequest("/api/user/language", {
+    method: "PUT",
+    body: JSON.stringify({ language })
+  });
+};

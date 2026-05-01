@@ -1,9 +1,15 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy import func
 from app.database import SessionLocal
+from app.models.account import Account
+from app.models.lender import Lender
+from app.models.transaction import Transaction
 from app.services.account_service import AccountService
 
 accounts_bp = Blueprint("accounts", __name__)
+
+ASSET_TYPES = ["Checking", "Savings", "HYSA"]
 
 
 @accounts_bp.route("/accounts", methods=["GET"])
@@ -12,19 +18,24 @@ def get_accounts():
     user_id = get_jwt_identity()
     db = SessionLocal()
     try:
-        service = AccountService(db)
-        accounts = service.get_user_accounts(int(user_id))
-        results = [
-            {
+        accounts = db.query(Account).filter(
+            Account.user_id == int(user_id),
+            Account.account_type.in_(ASSET_TYPES),
+            Account.deleted_at == None
+        ).all()
+
+        results = []
+        for a in accounts:
+            balance = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+                Transaction.account_id == a.id
+            ).scalar()
+            results.append({
                 "id": a.id,
-                "account_name": a.account_name,
-                "account_type": a.account_type,
-                "balance": str(a.balance),
-                "interest_rate": str(a.interest_rate),
-                "lender_id": a.lender_id
-            }
-            for a in accounts
-        ]
+                "name": a.account_name,
+                "type": a.account_type,
+                "balance": float(balance),
+                "apy": float(a.interest_rate)
+            })
         return jsonify(results), 200
     finally:
         db.close()
@@ -52,11 +63,10 @@ def create_account():
         )
         return jsonify({
             "id": account.id,
-            "account_name": account.account_name,
-            "account_type": account.account_type,
-            "balance": str(account.balance),
-            "interest_rate": str(account.interest_rate),
-            "lender_id": account.lender_id
+            "name": account.account_name,
+            "type": account.account_type,
+            "balance": float(account.balance),
+            "apy": float(account.interest_rate)
         }), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -67,6 +77,7 @@ def create_account():
 @accounts_bp.route("/accounts/<int:account_id>/balance", methods=["PUT"])
 @jwt_required()
 def update_balance(account_id):
+    user_id = get_jwt_identity()
     data = request.get_json()
 
     if data.get("balance") is None:
@@ -74,12 +85,20 @@ def update_balance(account_id):
 
     db = SessionLocal()
     try:
+        account = db.query(Account).filter(
+            Account.id == account_id,
+            Account.user_id == int(user_id),
+            Account.deleted_at == None
+        ).first()
+        if not account:
+            return jsonify({"error": "Account not found"}), 404
+
         service = AccountService(db)
         account = service.update_balance(account_id, data["balance"])
         return jsonify({
             "id": account.id,
-            "account_name": account.account_name,
-            "balance": str(account.balance)
+            "name": account.account_name,
+            "balance": float(account.balance)
         }), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
@@ -90,8 +109,17 @@ def update_balance(account_id):
 @accounts_bp.route("/accounts/<int:account_id>", methods=["DELETE"])
 @jwt_required()
 def delete_account(account_id):
+    user_id = get_jwt_identity()
     db = SessionLocal()
     try:
+        account = db.query(Account).filter(
+            Account.id == account_id,
+            Account.user_id == int(user_id),
+            Account.deleted_at == None
+        ).first()
+        if not account:
+            return jsonify({"error": "Account not found"}), 404
+
         service = AccountService(db)
         service.remove(account_id)
         return jsonify({"message": "Account deleted"}), 200
