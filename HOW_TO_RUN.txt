@@ -316,7 +316,41 @@ Seeded test accounts:
 
 
 ------------------------------------------------------------
-SECTION 10: STOPPING THE APP
+SECTION 10: PULLING UPDATES FROM A TEAMMATE
+------------------------------------------------------------
+
+If someone else pushed changes and you already have the project
+set up, do the following (Docker must be running):
+
+1. Pull the latest code:
+       git pull origin main
+
+2. Apply any new database migrations:
+       alembic upgrade head
+
+   This updates your local database with any new tables or
+   columns your teammate added. Only runs migrations you
+   are missing — safe to run every time you pull.
+
+3. If new sample data scripts were added, re-populate:
+       python app/populate_database.py   (Windows)
+       python3 app/populate_database.py  (Mac)
+
+   Only do this if your database is empty or you want
+   fresh sample data. Skip if you want to keep your
+   existing data.
+
+4. Restart Flask if it was already running:
+       Press Ctrl+C to stop it, then python app.py again
+
+NOTE: The actual data in your database (users, transactions,
+etc.) is stored locally in Docker and never travels through
+GitHub. Only the structure (tables, columns) is shared via
+migrations. Each teammate has their own local data.
+
+
+------------------------------------------------------------
+SECTION 11: STOPPING THE APP
 ------------------------------------------------------------
 
 1. Stop the frontend:
@@ -334,7 +368,7 @@ already running (check with docker ps).
 
 
 ------------------------------------------------------------
-SECTION 11: RUNNING THE TESTS
+SECTION 12: RUNNING THE TESTS
 ------------------------------------------------------------
 
 --- Backend (Pytest) ---
@@ -362,7 +396,7 @@ You should see 26 passed, 0 failed.
 
 
 ------------------------------------------------------------
-SECTION 12: COMMON ISSUES
+SECTION 13: COMMON ISSUES
 ------------------------------------------------------------
 
 "Connection refused" when starting Flask:
