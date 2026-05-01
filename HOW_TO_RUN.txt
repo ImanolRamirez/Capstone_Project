@@ -1,0 +1,389 @@
+============================================================
+   HOW TO RUN THE CAPSTONE FINANCIAL WEB APPLICATION
+   ATTENTION: THESE INSTRUCTIONS WHERE CREATED WITH AI WHEN
+   BEING GIVEN ALL FILES
+============================================================
+
+This guide covers everything needed to run the app from scratch
+on both Windows and Mac, including all required downloads,
+database setup, backend, and frontend.
+
+
+------------------------------------------------------------
+SECTION 1: REQUIRED SOFTWARE
+------------------------------------------------------------
+
+You need the following installed before anything else:
+
+1. Python 3.11 or higher
+   Windows: https://www.python.org/downloads/
+             Check "Add Python to PATH" during install
+   Mac:     brew install python
+             or download from https://www.python.org/downloads/
+
+2. Node.js (v18 or higher, includes npm)
+   Windows & Mac: https://nodejs.org/en/download
+   Choose the LTS version
+
+3. Docker Desktop
+   Windows & Mac: https://www.docker.com/products/docker-desktop
+   After installing, open Docker Desktop and leave it running
+   in the background before proceeding
+
+4. Git (if you need to clone the project)
+   Windows & Mac: https://git-scm.com/downloads
+
+
+------------------------------------------------------------
+SECTION 2: GET THE PROJECT
+------------------------------------------------------------
+
+If you already have the project folder, skip this step.
+
+Open a terminal (Mac: Terminal, Windows: Command Prompt or Git Bash)
+
+    git clone https://github.com/ashlinjohnson/Capstone_Project.git
+    cd Capstone_Project
+
+
+------------------------------------------------------------
+SECTION 3: SET UP THE DATABASE (Docker)
+------------------------------------------------------------
+
+Make sure Docker Desktop is open and running first.
+
+WINDOWS (Command Prompt or Git Bash):
+    docker-compose up -d
+
+MAC (Terminal):
+    docker-compose up -d
+
+This starts two containers:
+  - Capstone_db  : the PostgreSQL database (port 5433)
+  - Capstone_web : the Python/Flask environment
+
+To verify both containers are running:
+    docker ps
+
+You should see Capstone_db and Capstone_web listed as running.
+
+
+------------------------------------------------------------
+SECTION 4: CREATE THE .env FILE
+------------------------------------------------------------
+
+The .env file is NOT included in the repository for security
+reasons. You must create it manually before running the app.
+Without it, Flask cannot connect to the database and the app
+will not start.
+
+In the ROOT of the project folder (same level as app.py),
+create a new file called exactly:
+
+    .env
+
+Make sure there is a dot at the beginning of the name.
+
+--- WINDOWS ---
+
+Option 1 - Using Notepad:
+    1. Open Notepad
+    2. Copy and paste the contents below exactly as shown
+    3. Click File > Save As
+    4. Navigate to the project root folder
+    5. Set "Save as type" to "All Files (*.*)"
+    6. Name the file:  .env
+    7. Click Save
+
+Option 2 - Using Git Bash or Command Prompt:
+    From the project root folder, run:
+
+    echo DB_USER=postgres > .env
+    echo DB_PASSWORD=password >> .env
+    echo DB_HOST=localhost >> .env
+    echo DB_PORT=5433 >> .env
+    echo DB_NAME=Capstone >> .env
+    echo SECRET_KEY=change-this-to-a-random-secret >> .env
+    echo JWT_SECRET_KEY=change-this-to-another-random-secret >> .env
+
+--- MAC ---
+
+Option 1 - Using Terminal:
+    From the project root folder, run:
+
+    cat > .env << EOF
+    DB_USER=postgres
+    DB_PASSWORD=password
+    DB_HOST=localhost
+    DB_PORT=5433
+    DB_NAME=Capstone
+    SECRET_KEY=change-this-to-a-random-secret
+    JWT_SECRET_KEY=change-this-to-another-random-secret
+    EOF
+
+Option 2 - Using a text editor:
+    1. Open TextEdit
+    2. Click Format > Make Plain Text
+    3. Copy and paste the contents below
+    4. Save the file as .env in the project root folder
+
+--- CONTENTS OF THE .env FILE ---
+
+Copy these exact lines with no extra spaces:
+
+    DB_USER=postgres
+    DB_PASSWORD=password
+    DB_HOST=localhost
+    DB_PORT=5433
+    DB_NAME=Capstone
+    SECRET_KEY=change-this-to-a-random-secret
+    JWT_SECRET_KEY=change-this-to-another-random-secret
+
+--- WHAT EACH LINE MEANS ---
+
+    DB_USER     : The PostgreSQL username (postgres is the default)
+    DB_PASSWORD : The database password set in docker-compose.yml
+    DB_HOST     : localhost because Docker maps the DB to your machine
+    DB_PORT     : 5433 is the external port Docker exposes (maps to
+                  PostgreSQL's internal port 5432 inside the container)
+    DB_NAME     : The name of the database inside the container
+    SECRET_KEY  : Flask session secret key (set any long random string)
+    JWT_SECRET_KEY : Secret used to sign JWT tokens (set any long
+                     random string, different from SECRET_KEY)
+
+--- VERIFY IT WORKED ---
+
+After creating the file, your project root should look like this:
+
+    Capstone_Project/
+        .env                  <-- this file you just created
+        app.py
+        app/
+        frontend/
+        routes/
+        requirements.txt
+        docker-compose.yml
+        ...
+
+If the file is named ".env.txt" it will not work. Make sure
+your text editor did not add a .txt extension.
+
+On Windows, to check: open File Explorer, go to the project
+folder, click View and enable "File name extensions" to see
+the full name.
+
+On Mac, to check: in Terminal run:
+    ls -la | grep .env
+You should see .env listed.
+
+
+------------------------------------------------------------
+SECTION 5: SET UP THE PYTHON BACKEND (Virtual Environment)
+------------------------------------------------------------
+
+--- WINDOWS ---
+
+Open Command Prompt or Git Bash in the project root folder.
+
+1. Create a virtual environment:
+       python -m venv venv
+
+2. Activate it:
+       venv\Scripts\activate
+
+3. Install dependencies:
+       pip install -r requirements.txt
+
+
+--- MAC ---
+
+Open Terminal in the project root folder.
+
+1. Create a virtual environment:
+       python3 -m venv venv
+
+2. Activate it:
+       source venv/bin/activate
+
+3. Install dependencies:
+       pip install -r requirements.txt
+
+
+------------------------------------------------------------
+SECTION 5: RUN DATABASE MIGRATIONS
+------------------------------------------------------------
+
+With the virtual environment still active and Docker running,
+run the Alembic migrations to create all database tables:
+
+WINDOWS:
+    alembic upgrade head
+
+MAC:
+    alembic upgrade head
+
+You should see a series of migration steps run with no errors.
+
+
+------------------------------------------------------------
+SECTION 6: POPULATE THE DATABASE WITH SAMPLE DATA
+------------------------------------------------------------
+
+This step creates 5 sample users with accounts, transactions,
+debts, and budgets. Only run this once — running it multiple
+times will create duplicate data.
+
+WINDOWS:
+    python app/populate_database.py
+
+MAC:
+    python3 app/populate_database.py
+
+You should see output like:
+    Populating database...
+    Creating 5 users...
+    Created user: example@email.com
+    Database populated successfully.
+
+Default password for all seeded users: Password123!
+
+
+------------------------------------------------------------
+SECTION 7: START THE FLASK BACKEND
+------------------------------------------------------------
+
+Make sure your virtual environment is still active.
+Run this from the project root folder:
+
+WINDOWS:
+    python app.py
+
+MAC:
+    python3 app.py
+
+You should see:
+    Tables created
+    * Running on http://127.0.0.1:5000
+
+Leave this terminal open. The backend must stay running
+while you use the app.
+
+
+------------------------------------------------------------
+SECTION 8: START THE REACT FRONTEND
+------------------------------------------------------------
+
+Open a NEW terminal window (keep the Flask terminal open).
+Navigate into the frontend folder:
+
+WINDOWS:
+    cd frontend
+    npm install
+    npm run dev
+
+MAC:
+    cd frontend
+    npm install
+    npm run dev
+
+You should see:
+    VITE v7.x.x  ready in x ms
+    Local: http://localhost:5173/
+
+npm install only needs to be run the first time. After that
+you can just run npm run dev.
+
+
+------------------------------------------------------------
+SECTION 9: OPEN THE APP
+------------------------------------------------------------
+
+Open your browser and go to:
+
+    http://localhost:5173
+
+You will see the landing page. From here you can:
+  - Register a new account
+  - Log in with an existing seeded account
+
+Seeded test accounts:
+    Email:    ryanjoshua@example.net    Password: Password123!
+    Email:    craigcynthia@example.com  Password: Password000!
+    Email:    crystalhernandez@example.com  Password: Password123!
+   
+    Email:    mcarter@example.org       Password: Password123!
+  
+
+
+------------------------------------------------------------
+SECTION 10: STOPPING THE APP
+------------------------------------------------------------
+
+1. Stop the frontend:
+       Press Ctrl+C in the frontend terminal
+
+2. Stop the Flask backend:
+       Press Ctrl+C in the Flask terminal
+
+3. Stop the Docker containers:
+       docker-compose down
+
+To restart later, just repeat Sections 7 and 8.
+Docker only needs Section 3 if the containers are not
+already running (check with docker ps).
+
+
+------------------------------------------------------------
+SECTION 11: RUNNING THE TESTS
+------------------------------------------------------------
+
+--- Backend (Pytest) ---
+
+Make sure Docker is running, then from the project root
+with your virtual environment active:
+
+WINDOWS & MAC:
+    pytest tests/database/
+
+This runs against a separate Capstone_test database and
+does not affect your real data.
+
+--- Frontend (API Integration) ---
+
+Make sure Flask is running first (Section 7), then:
+
+WINDOWS (Git Bash):
+    bash tests/frontend/test_api_integration.sh
+
+MAC:
+    bash tests/frontend/test_api_integration.sh
+
+You should see 26 passed, 0 failed.
+
+
+------------------------------------------------------------
+SECTION 12: COMMON ISSUES
+------------------------------------------------------------
+
+"Connection refused" when starting Flask:
+    Docker is not running or containers are not started.
+    Open Docker Desktop and run: docker-compose up -d
+
+"Module not found" errors in Flask:
+    Your virtual environment is not activated.
+    Run: venv\Scripts\activate (Windows)
+         source venv/bin/activate (Mac)
+
+"Port 5173 already in use":
+    Another process is using that port.
+    Run: npm run dev -- --port 5174
+
+"Port 5433 already in use":
+    Another PostgreSQL instance is running locally.
+    Stop it or change the port in docker-compose.yml
+
+npm install fails:
+    Make sure Node.js v18 or higher is installed.
+    Run: node --version to check.
+
+============================================================

@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import extract
 from app.models.transaction import Transaction
 from app.models.account import Account
+from app.models.category import Category
 from app.database import SessionLocal
 
 transaction_bp = Blueprint("transactions", __name__)
@@ -31,17 +32,18 @@ def get_transactions():
         if category_id:
             query = query.filter(Transaction.category_id == int(category_id))
 
-        transactions = query.all()
+        transactions = query.order_by(Transaction.transaction_date.desc()).all()
 
         results = [
             {
                 "id": t.id,
                 "account_id": t.account_id,
                 "category_id": t.category_id,
+                "category": t.category.name if t.category else None,
                 "merchant_id": t.merchant_id,
-                "amount": str(t.amount),
+                "amount": float(t.amount),
                 "description": t.description,
-                "transaction_date": t.transaction_date.isoformat() if t.transaction_date else None
+                "date": t.transaction_date.strftime("%Y-%m-%d") if t.transaction_date else None
             }
             for t in transactions
         ]
@@ -53,12 +55,22 @@ def get_transactions():
 @transaction_bp.route("/transactions", methods=["POST"])
 @jwt_required()
 def add_transaction():
+    user_id = get_jwt_identity()
     db = SessionLocal()
     try:
         data = request.get_json()
 
         if not data.get("account_id") or not data.get("amount"):
             return jsonify({"error": "Account ID and amount are required"}), 400
+
+        # Verify the account belongs to the current user
+        account = db.query(Account).filter(
+            Account.id == int(data["account_id"]),
+            Account.user_id == int(user_id),
+            Account.deleted_at == None
+        ).first()
+        if not account:
+            return jsonify({"error": "Account not found"}), 404
 
         new_transaction = Transaction(
             account_id=data["account_id"],
@@ -76,10 +88,11 @@ def add_transaction():
             "id": new_transaction.id,
             "account_id": new_transaction.account_id,
             "category_id": new_transaction.category_id,
+            "category": new_transaction.category.name if new_transaction.category else None,
             "merchant_id": new_transaction.merchant_id,
-            "amount": str(new_transaction.amount),
+            "amount": float(new_transaction.amount),
             "description": new_transaction.description,
-            "transaction_date": new_transaction.transaction_date.isoformat() if new_transaction.transaction_date else None
+            "date": new_transaction.transaction_date.strftime("%Y-%m-%d") if new_transaction.transaction_date else None
         }), 201
     except Exception as e:
         db.rollback()
@@ -91,9 +104,13 @@ def add_transaction():
 @transaction_bp.route("/transactions/<int:transaction_id>", methods=["DELETE"])
 @jwt_required()
 def delete_transaction(transaction_id):
+    user_id = get_jwt_identity()
     db = SessionLocal()
     try:
-        transaction = db.query(Transaction).filter(Transaction.id == transaction_id).first()
+        transaction = db.query(Transaction).join(Transaction.account).filter(
+            Transaction.id == transaction_id,
+            Account.user_id == int(user_id)
+        ).first()
 
         if not transaction:
             return jsonify({"error": "Transaction not found"}), 404

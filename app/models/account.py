@@ -17,4 +17,4 @@ class Account(BaseModel):
 
     user = relationship("User", back_populates="accounts")
     lender = relationship("Lender")
-    transactions = relationship("Transaction", back_populates="account")
+    transactions = relationship("Transaction", back_populates="account", cascade="all, delete-orphan")

@@ -6,7 +6,8 @@ Typography,
 TextField,
 Button,
 Card,
-CardContent
+CardContent,
+Divider
 } from "@mui/material"
 
 import assetAtlasLogo from "../assets/AssetAtlas.png"
@@ -29,7 +30,7 @@ const handleLogin = async () => {
   try {
     const response = await loginUser(email, password);
 
-    localStorage.setItem("token", response.token || "session");
+    localStorage.setItem("token", response.access_token);
     localStorage.setItem("user", JSON.stringify(response.user || { email }));
 
     navigate("/dashboard");
@@ -109,6 +110,17 @@ return(
 >
  Login
 </Button>
+
+<Divider sx={{ my: 2 }} />
+
+<Typography
+ variant="body2"
+ align="center"
+ sx={{ color:"#14684D", cursor:"pointer", "&:hover":{ textDecoration:"underline" } }}
+ onClick={() => navigate("/forgot-password")}
+>
+ Forgot Password?
+</Typography>
 
 </CardContent>
 </Card>

@@ -13,7 +13,6 @@ class AccountService(BaseService[Account, AccountData]):
             Account.user_id == user_id,
             Account.account_name == account_name.strip(),
             Account.lender_id == lender_id,
-            Account.deleted_at == None
         ).first()
 
         if existing_account:

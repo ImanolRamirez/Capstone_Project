@@ -1,3 +1,4 @@
+import re
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.services.base_service import BaseService
@@ -8,7 +9,6 @@ import re
 class UserService(BaseService[User, UserData]):
     def __init__(self, db: Session):
         super().__init__(db, UserData(db), "User")
-
 
     def create_user(self, username: str, first_name: str, last_name: str, email: str, password: str) -> User:
 
@@ -27,18 +27,7 @@ class UserService(BaseService[User, UserData]):
         user = User(username=username, first_name=first_name, last_name=last_name, email=email, password_hash=hashed)
         return self.create(user, commit=True)
 
-    def update_user_email(self, user_id: int, new_email: str):
-
-        email_exists = self.db.query(User).filter(User.email == new_email).first()
-        if email_exists:
-            raise ValueError("Email already used by another user.")
-
-        return self.update(user_id, email=new_email, commit=True)
-
-    def update_user_password(self, user_id: int, new_password: str):
-        return self.update(user_id, password=hash_password(new_password), commit=True)
-
-    def verify_user(self, email: str, password: str):
+    def authenticate_user(self, email: str, password: str) -> User:
         user = self.data.read_user_email(email)
 
         if user and verify_password(password, user.password_hash):
@@ -46,5 +35,11 @@ class UserService(BaseService[User, UserData]):
         else:
             raise ValueError("Invalid email or password")
 
+    def update_user_email(self, user_id: int, new_email: str):
+        email_exists = self.db.query(User).filter(User.email == new_email).first()
+        if email_exists:
+            raise ValueError("Email already used by another user.")
+        return self.update(user_id, email=new_email, commit=True)
 
-
+    def update_user_password(self, user_id: int, new_password: str):
+        return self.update(user_id, password_hash=hash_password(new_password), commit=True)

@@ -8,7 +8,7 @@ class Transaction(BaseModel):
 
     id = Column(Integer, primary_key=True)
     account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False, index=True)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
 
     amount = Column(Numeric(10, 2), nullable=False)
     description = Column(String(255))
