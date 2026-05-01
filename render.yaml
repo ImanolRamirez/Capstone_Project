@@ -11,7 +11,7 @@ services:
     runtime: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "alembic upgrade head && gunicorn app:flask_app --workers 2 --bind 0.0.0.0:$PORT"
+    startCommand: "alembic upgrade head && gunicorn wsgi:flask_app --workers 2 --bind 0.0.0.0:$PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
