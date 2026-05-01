@@ -21,9 +21,18 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import FilterListIcon from "@mui/icons-material/FilterList";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import useTransactions from "../hooks/useTransactions";
 import { useLanguage } from "../context/LanguageContext";
+
+const MONTHS = [
+  { value: 1, label: "January" }, { value: 2, label: "February" },
+  { value: 3, label: "March" }, { value: 4, label: "April" },
+  { value: 5, label: "May" }, { value: 6, label: "June" },
+  { value: 7, label: "July" }, { value: 8, label: "August" },
+  { value: 9, label: "September" }, { value: 10, label: "October" },
+  { value: 11, label: "November" }, { value: 12, label: "December" }
+];
 
 const CATEGORY_COLORS = {
   Income: { bg: "#e8f5e9", color: "#14684D" },
@@ -58,15 +67,28 @@ function Transactions() {
   const { transactions, loading, error } = useTransactions();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterYear, setFilterYear] = useState("");
 
-  const filtered = transactions.filter(t => {
-    const matchesSearch = (t.description || "").toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = category === "" || t.category === category;
-    return matchesSearch && matchesCategory;
+  const availableYears = useMemo(() => {
+    const years = new Set(
+      transactions.map((tx) => tx.date?.split("-")[0]).filter(Boolean)
+    );
+    return Array.from(years).sort((a, b) => b - a);
+  }, [transactions]);
+
+  const filtered = transactions.filter(tx => {
+    const matchesSearch = (tx.description || "").toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = category === "" || tx.category === category;
+    const txDate = tx.date || "";
+    const [txYear, txMonth] = txDate.split("-");
+    const matchesMonth = filterMonth === "" || parseInt(txMonth) === parseInt(filterMonth);
+    const matchesYear = filterYear === "" || txYear === filterYear;
+    return matchesSearch && matchesCategory && matchesMonth && matchesYear;
   });
 
-  const totalIncome = filtered.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = filtered.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const totalIncome = filtered.filter(tx => tx.amount > 0).reduce((s, tx) => s + tx.amount, 0);
+  const totalExpenses = filtered.filter(tx => tx.amount < 0).reduce((s, tx) => s + Math.abs(tx.amount), 0);
 
   if (loading) {
     return (
@@ -119,7 +141,7 @@ function Transactions() {
 
       {/* FILTERS */}
 
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
 
         <TextField
           label="Search transactions"
@@ -134,8 +156,36 @@ function Transactions() {
               </InputAdornment>
             )
           }}
-          sx={{ borderRadius: 2 }}
+          sx={{ flex: 1, minWidth: 200 }}
         />
+
+        <TextField
+          select
+          label="Month"
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+          size="small"
+          sx={{ minWidth: 140 }}
+        >
+          <MenuItem value="">All Months</MenuItem>
+          {MONTHS.map((m) => (
+            <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          select
+          label="Year"
+          value={filterYear}
+          onChange={(e) => setFilterYear(e.target.value)}
+          size="small"
+          sx={{ minWidth: 110 }}
+        >
+          <MenuItem value="">All Years</MenuItem>
+          {availableYears.map((y) => (
+            <MenuItem key={y} value={y}>{y}</MenuItem>
+          ))}
+        </TextField>
 
         <TextField
           select
@@ -189,15 +239,15 @@ function Transactions() {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((t) => (
+              filtered.map((tx) => (
                 <TableRow
-                  key={t.id}
+                  key={tx.id}
                   hover
                   sx={{ "&:hover": { backgroundColor: "#fafafa" } }}
                 >
 
                   <TableCell sx={{ color: "text.secondary", fontSize: "0.85rem" }}>
-                    {t.date}
+                    {tx.date}
                   </TableCell>
 
                   <TableCell>
@@ -210,31 +260,31 @@ function Transactions() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: t.amount > 0 ? "#e8f5e9" : "#ffebee",
+                          backgroundColor: tx.amount > 0 ? "#e8f5e9" : "#ffebee",
                           flexShrink: 0
                         }}
                       >
-                        {t.amount > 0
+                        {tx.amount > 0
                           ? <ArrowUpwardIcon sx={{ fontSize: 14, color: "#14684D" }} />
                           : <ArrowDownwardIcon sx={{ fontSize: 14, color: "#D32F2F" }} />
                         }
                       </Box>
                       <Typography variant="body2" fontWeight="bold">
-                        {t.description || "—"}
+                        {tx.description || "—"}
                       </Typography>
                     </Box>
                   </TableCell>
 
                   <TableCell>
-                    <CategoryChip category={t.category} />
+                    <CategoryChip category={tx.category} />
                   </TableCell>
 
                   <TableCell align="right">
                     <Typography
                       fontWeight="bold"
-                      sx={{ color: t.amount > 0 ? "#14684D" : "#D32F2F" }}
+                      sx={{ color: tx.amount > 0 ? "#14684D" : "#D32F2F" }}
                     >
-                      {t.amount > 0 ? "+" : ""}${Math.abs(t.amount).toFixed(2)}
+                      {tx.amount > 0 ? "+" : ""}${Math.abs(tx.amount).toFixed(2)}
                     </Typography>
                   </TableCell>
 

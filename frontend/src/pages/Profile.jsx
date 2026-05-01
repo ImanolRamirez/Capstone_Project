@@ -11,6 +11,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LanguageIcon from "@mui/icons-material/Language";
+import HomeIcon from "@mui/icons-material/Home";
 
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -56,6 +57,12 @@ function Profile() {
       description: "Choose your preferred language.",
       icon: <LanguageIcon sx={{ fontSize: 40, color: "#14684D" }} />,
       path: "/profile/language"
+    },
+    {
+      title: "Address",
+      description: "View and update your home address.",
+      icon: <HomeIcon sx={{ fontSize: 40, color: "#14684D" }} />,
+      path: "/profile/address"
     }
   ];
 

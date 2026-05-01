@@ -1,7 +1,16 @@
+import random
 from sqlalchemy.orm import Session
 from app.data.account_data import AccountData
 from app.models.account import Account
 from app.services.base_service import BaseService
+
+
+def _generate_routing_number() -> str:
+    return str(random.randint(100000000, 999999999))
+
+
+def _generate_account_number() -> str:
+    return str(random.randint(1000000000, 9999999999))
 
 
 class AccountService(BaseService[Account, AccountData]):
@@ -26,6 +35,8 @@ class AccountService(BaseService[Account, AccountData]):
             account_name=account_name,
             account_type=account_type,
             lender_id=lender_id,
+            routing_number=_generate_routing_number(),
+            account_number=_generate_account_number(),
             **kwargs
         )
 

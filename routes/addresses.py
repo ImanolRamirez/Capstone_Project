@@ -74,6 +74,42 @@ def add_address():
         db.close()
 
 
+@addresses_bp.route("/addresses/<int:address_id>", methods=["PUT"])
+@jwt_required()
+def update_address(address_id):
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    db = SessionLocal()
+    try:
+        service = AddressService(db)
+        address_data = {
+            "address_line1": data.get("address_line1"),
+            "address_line2": data.get("address_line2"),
+            "city": data.get("city"),
+            "state": data.get("state"),
+            "zip_code": data.get("zip_code"),
+            "country": data.get("country", "United States")
+        }
+        address = service.add_address(
+            user_id=int(user_id),
+            address_data=address_data,
+            address_type=data.get("address_type", "Primary")
+        )
+        return jsonify({
+            "id": address.id,
+            "address_line1": address.address_line1,
+            "address_line2": address.address_line2,
+            "city": address.city,
+            "state": address.state,
+            "zip_code": address.zip_code,
+            "country": address.country
+        }), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        db.close()
+
+
 @addresses_bp.route("/addresses/<int:address_id>", methods=["DELETE"])
 @jwt_required()
 def delete_address(address_id):

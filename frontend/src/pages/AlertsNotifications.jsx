@@ -7,34 +7,54 @@ import {
   FormControlLabel,
   Button,
   Alert,
-  Divider
+  Divider,
+  CircularProgress
 } from "@mui/material";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getNotifications, updateNotifications } from "../services/userService";
+
+const DEFAULT_PREFS = {
+  notif_email_transactions: true,
+  notif_email_security: true,
+  notif_email_promotions: false,
+  notif_push_transactions: true,
+  notif_push_security: true,
+  notif_push_promotions: false,
+  notif_sms_transactions: false,
+  notif_sms_security: true
+};
 
 function AlertsNotifications() {
-
   const navigate = useNavigate();
   const [msg, setMsg] = useState({ type: "", text: "" });
+  const [alerts, setAlerts] = useState(DEFAULT_PREFS);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [alerts, setAlerts] = useState({
-    emailTransactions: true,
-    emailSecurity: true,
-    emailPromotions: false,
-    pushTransactions: true,
-    pushSecurity: true,
-    pushPromotions: false,
-    smsTransactions: false,
-    smsSecurity: true
-  });
+  useEffect(() => {
+    getNotifications()
+      .then((data) => setAlerts(data))
+      .catch(() => {/* keep defaults on error */})
+      .finally(() => setLoading(false));
+  }, []);
 
   const toggle = (key) => {
     setAlerts((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleSave = () => {
-    setMsg({ type: "success", text: "Notification preferences saved." });
+  const handleSave = async () => {
+    setSaving(true);
+    setMsg({ type: "", text: "" });
+    try {
+      await updateNotifications(alerts);
+      setMsg({ type: "success", text: "Notification preferences saved." });
+    } catch {
+      setMsg({ type: "error", text: "Failed to save preferences." });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const renderToggle = (label, key) => (
@@ -42,7 +62,7 @@ function AlertsNotifications() {
       key={key}
       control={
         <Switch
-          checked={alerts[key]}
+          checked={!!alerts[key]}
           onChange={() => toggle(key)}
           sx={{
             "& .MuiSwitch-switchBase.Mui-checked": { color: "#14684D" },
@@ -56,8 +76,15 @@ function AlertsNotifications() {
     />
   );
 
-  return (
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 300 }}>
+        <CircularProgress sx={{ color: "#14684D" }} />
+      </Box>
+    );
+  }
 
+  return (
     <Box>
 
       <Button
@@ -84,9 +111,9 @@ function AlertsNotifications() {
             Email Notifications
           </Typography>
 
-          {renderToggle("Transaction alerts", "emailTransactions")}
-          {renderToggle("Security alerts", "emailSecurity")}
-          {renderToggle("Promotions & offers", "emailPromotions")}
+          {renderToggle("Transaction alerts", "notif_email_transactions")}
+          {renderToggle("Security alerts", "notif_email_security")}
+          {renderToggle("Promotions & offers", "notif_email_promotions")}
 
           <Divider sx={{ my: 3 }} />
 
@@ -94,9 +121,9 @@ function AlertsNotifications() {
             Push Notifications
           </Typography>
 
-          {renderToggle("Transaction alerts", "pushTransactions")}
-          {renderToggle("Security alerts", "pushSecurity")}
-          {renderToggle("Promotions & offers", "pushPromotions")}
+          {renderToggle("Transaction alerts", "notif_push_transactions")}
+          {renderToggle("Security alerts", "notif_push_security")}
+          {renderToggle("Promotions & offers", "notif_push_promotions")}
 
           <Divider sx={{ my: 3 }} />
 
@@ -104,12 +131,13 @@ function AlertsNotifications() {
             SMS Notifications
           </Typography>
 
-          {renderToggle("Transaction alerts", "smsTransactions")}
-          {renderToggle("Security alerts", "smsSecurity")}
+          {renderToggle("Transaction alerts", "notif_sms_transactions")}
+          {renderToggle("Security alerts", "notif_sms_security")}
 
           <Button
             variant="contained"
             fullWidth
+            disabled={saving}
             sx={{
               mt: 3,
               backgroundColor: "#14684D",
@@ -117,14 +145,13 @@ function AlertsNotifications() {
             }}
             onClick={handleSave}
           >
-            Save Preferences
+            {saving ? "Saving..." : "Save Preferences"}
           </Button>
 
         </CardContent>
       </Card>
 
     </Box>
-
   );
 }
 

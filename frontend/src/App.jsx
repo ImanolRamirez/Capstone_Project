@@ -18,6 +18,7 @@ import PersonalDetails from "./pages/PersonalDetails";
 import LoginPreferences from "./pages/LoginPreferences";
 import AlertsNotifications from "./pages/AlertsNotifications";
 import LanguageSettings from "./pages/LanguageSettings";
+import Address from "./pages/Address";
 
 import Layout from "./Components/Layout";
 import ProtectedRoute from "./Components/ProtectedRoute";
@@ -57,7 +58,8 @@ const router = createBrowserRouter([
       { path: "/profile/personal", element: <PersonalDetails /> },
       { path: "/profile/login", element: <LoginPreferences /> },
       { path: "/profile/alerts", element: <AlertsNotifications /> },
-      { path: "/profile/language", element: <LanguageSettings /> }
+      { path: "/profile/language", element: <LanguageSettings /> },
+      { path: "/profile/address", element: <Address /> }
     ]
   }
 ]);
