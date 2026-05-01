@@ -1,7 +1,7 @@
 databases:
   - name: capstone-db
-    databaseName: Capstone
-    user: postgres
+    databaseName: capstone
+    user: capstone_user
     plan: free
 
 services:
